@@ -8,6 +8,11 @@
 
 **Repository**: [https://github.com/florinel-chis/flow-oms](https://github.com/florinel-chis/flow-oms)
 
+## Dashboard
+
+![FlowOMS Dashboard](documentation/images/dashboard-overview.png)
+*Real-time OMS dashboard with KPIs, order widgets, and SLA monitoring*
+
 ## Tech Stack
 
 - **Laravel 12** - PHP framework
@@ -115,10 +120,28 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Documentation
+
+Comprehensive documentation is available in the [`documentation/`](documentation/) folder:
+
+- **[Getting Started](documentation/README.md)** - Documentation index
+- **[Architecture](documentation/architecture.md)** - System architecture and patterns
+- **[Configuration](documentation/configuration.md)** - Environment and configuration
+- **[Magento Integration](documentation/integrations/magento-integration.md)** - Connecting to Magento 2
+- **[API Authentication](documentation/integrations/api-authentication.md)** - Sanctum token authentication
+- **[Dashboard](documentation/features/dashboard.md)** - Dashboard widgets and features
+- **[Order Management](documentation/features/order-management.md)** - Order lifecycle and workflows
+- **[SLA Monitoring](documentation/features/sla-monitoring.md)** - Service level tracking
+- **[Notifications](documentation/features/notifications.md)** - Email notifications
+- **[API Overview](documentation/api/overview.md)** - REST API reference
+- **[Orders API](documentation/api/orders-api.md)** - Orders endpoints
+- **[Invoices API](documentation/api/invoices-api.md)** - Invoices endpoints
+- **[Webhooks](documentation/api/webhooks.md)** - Webhook integration
+
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/florinel-chis/flow-oms/issues)
-- **Documentation**: Check the inline code documentation and Laravel/Filament docs
+- **Documentation**: See the [`documentation/`](documentation/) folder
 
 ## License
 
