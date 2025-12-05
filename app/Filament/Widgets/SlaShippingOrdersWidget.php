@@ -5,9 +5,8 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use App\Services\EmailNotificationService;
 use Carbon\Carbon;
+use Filament\Actions\BulkAction;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -105,12 +104,6 @@ class SlaShippingOrdersWidget extends BaseWidget
                         'complete' => 'Complete',
                         'canceled' => 'Canceled',
                     ]),
-            ])
-            ->toolbarActions([
-                Action::make('refresh')
-                    ->label('Refresh')
-                    ->icon('heroicon-o-arrow-path')
-                    ->action(fn () => $this->dispatch('$refresh')),
             ])
             ->bulkActions([
                 BulkAction::make('mark_high_priority')
