@@ -1,6 +1,12 @@
-# FlowOMS SaaS
+# FlowOMS
 
-A multi-tenant Order Management System for Magento 2 stores, built with Laravel 12 and Filament 4.
+> A multi-tenant Order Management System for Magento 2 stores, built with Laravel 12 and Filament 4.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Laravel](https://img.shields.io/badge/Laravel-12-red.svg)](https://laravel.com)
+[![Filament](https://img.shields.io/badge/Filament-4-orange.svg)](https://filamentphp.com)
+
+**Repository**: [https://github.com/florinel-chis/flow-oms](https://github.com/florinel-chis/flow-oms)
 
 ## Tech Stack
 
@@ -11,78 +17,53 @@ A multi-tenant Order Management System for Magento 2 stores, built with Laravel 
 - **Pest PHP** - Testing framework
 - **Playwright** - E2E testing
 
+## Installation
+
+### Clone Repository
+
+```bash
+git clone https://github.com/florinel-chis/flow-oms.git
+cd flow-oms
+```
+
+### Initial Setup
+
+```bash
+# Install dependencies
+composer install
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+
+# Generate Filament assets
+php artisan filament:assets
+
+# Setup database
+php artisan migrate --seed
+
+# Create admin user
+php artisan filament:user
+```
+
 ## Quick Start
 
-### 🚀 One-Command Start
+After installation, start the application:
 
 ```bash
-./start.sh
-```
+# Start development server with queue worker and logs
+composer dev
 
-This will:
-- Check for existing processes and stop them
-- Find an available port (starting with 8000)
-- Start Laravel server, queue worker, logs, and Vite
-- Display URLs for accessing the application
-
-Press `Ctrl+C` to stop all services.
-
-### 🛑 Stop Application
-
-```bash
-./stop.sh
-```
-
-### 📊 Check Status
-
-```bash
-./status.sh
-```
-
-### 🔄 Restart Application
-
-```bash
-./restart.sh
-```
-
-## Initial Setup
-
-First time setup:
-
-```bash
-# Install dependencies and configure
-composer setup
-
-# Start the application
-./start.sh
+# Or use artisan serve only
+php artisan serve
 ```
 
 Visit `http://127.0.0.1:8000/admin` to access the Filament admin panel.
 
-## Application Management Scripts
-
-Four shell scripts are provided for managing the application:
-
-| Script | Purpose |
-|--------|---------|
-| `start.sh` | Start all services (Laravel, Queue, Logs, Vite) |
-| `stop.sh` | Stop all services gracefully |
-| `restart.sh` | Restart all services |
-| `status.sh` | Show status of all services and ports |
-
-See [SCRIPTS.md](SCRIPTS.md) for detailed documentation.
-
 ## Development
-
-### Running the Application
-
-```bash
-# Start all services
-./start.sh
-
-# Or use composer directly (no auto port detection)
-composer dev
-```
 
 ### Syncing Magento Orders
 
@@ -121,52 +102,35 @@ npm run test:e2e:watch
 - **Queue processing** - Background job handling
 - **Filament admin** - Modern, reactive admin interface
 - **Real-time logs** - Built-in log tailer
-
-## Documentation
-
-- [SCRIPTS.md](SCRIPTS.md) - Application management scripts
-- [CLAUDE.md](CLAUDE.md) - Development guide for Claude Code
-- [Plan](/.claude/plans/sassy-zooming-tome.md) - Magento sync implementation plan
-
----
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. Laravel provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **REST API** - Sanctum-authenticated API with tenant scoping
+- **E2E Testing** - Comprehensive Playwright test suite
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Code of Conduct
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Support
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Issues**: [GitHub Issues](https://github.com/florinel-chis/flow-oms/issues)
+- **Documentation**: Check the inline code documentation and Laravel/Filament docs
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+FlowOMS is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Built With
+
+- [Laravel](https://laravel.com) - The PHP Framework
+- [Filament](https://filamentphp.com) - Admin Panel Framework
+- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
+- [Playwright](https://playwright.dev) - E2E testing framework
+
+---
+
+Made with ❤️ by [Florinel Chis](https://github.com/florinel-chis)
