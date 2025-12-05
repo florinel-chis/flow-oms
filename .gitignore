@@ -101,3 +101,5 @@ task-tracker/
 # Documentation Archives & Docs
 /docs-archive/
 /docs/
+CLAUDE.md
+/tests/**/*.md
