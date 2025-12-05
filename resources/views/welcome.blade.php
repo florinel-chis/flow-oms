@@ -42,6 +42,33 @@
             </a>
         </div>
 
+        {{-- Request a Demo Section --}}
+        <div class="max-w-3xl mx-auto mb-16">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-8 text-center transform hover:scale-[1.02] transition-transform duration-200">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
+                    <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-3">
+                    Request a Demo
+                </h2>
+                <p class="text-xl text-indigo-100 mb-6">
+                    Interested in FlowOMS? Get in touch with us to schedule a personalized demo.
+                </p>
+                <a href="mailto:info@magendoo.ro"
+                   class="inline-flex items-center px-8 py-4 bg-white text-indigo-600 font-bold rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    info@magendoo.ro
+                </a>
+                <p class="text-sm text-indigo-200 mt-4">
+                    We'll respond within 24 hours
+                </p>
+            </div>
+        </div>
+
         {{-- How It Works Section --}}
         <div class="max-w-5xl mx-auto mb-20">
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
