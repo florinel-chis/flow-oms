@@ -1,0 +1,137 @@
+<x-filament-panels::page>
+    {{-- Summary Stats Section --}}
+    <div class="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
+        @php
+            $stats = $this->getSummaryStats();
+        @endphp
+
+        <x-filament::card>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Orders</h3>
+                    <x-filament::icon
+                        icon="heroicon-o-shopping-cart"
+                        class="w-5 h-5 text-gray-400"
+                    />
+                </div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {{ number_format($stats['total_orders']) }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Filtered count</p>
+            </div>
+        </x-filament::card>
+
+        <x-filament::card>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</h3>
+                    <x-filament::icon
+                        icon="heroicon-o-currency-dollar"
+                        class="w-5 h-5 text-green-500"
+                    />
+                </div>
+                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
+                    ${{ number_format($stats['total_revenue'], 2) }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Filtered sum</p>
+            </div>
+        </x-filament::card>
+
+        <x-filament::card>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Order Value</h3>
+                    <x-filament::icon
+                        icon="heroicon-o-chart-bar"
+                        class="w-5 h-5 text-blue-500"
+                    />
+                </div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    ${{ number_format($stats['avg_order_value'], 2) }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Average</p>
+            </div>
+        </x-filament::card>
+
+        <x-filament::card>
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Unpaid Amount</h3>
+                    <x-filament::icon
+                        icon="heroicon-o-exclamation-circle"
+                        class="w-5 h-5 text-orange-500"
+                    />
+                </div>
+                <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    ${{ number_format($stats['unpaid_amount'], 2) }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Pending payment</p>
+            </div>
+        </x-filament::card>
+    </div>
+
+    {{-- Quick Filters (Tabs) --}}
+    <div class="mb-6">
+        <x-filament::tabs>
+            <x-filament::tabs.item
+                :active="!request('quick_filter')"
+                wire:click="$set('tableFilters.quick_filter', '')"
+            >
+                All Orders
+            </x-filament::tabs.item>
+
+            <x-filament::tabs.item
+                :active="request('quick_filter') === 'unpaid'"
+                wire:click="$set('tableFilters.payment_status.value', 'pending')"
+            >
+                <span class="flex items-center gap-2">
+                    Unpaid
+                    <x-filament::badge color="warning">
+                        {{ \App\Models\Order::where('payment_status', 'pending')->count() }}
+                    </x-filament::badge>
+                </span>
+            </x-filament::tabs.item>
+
+            <x-filament::tabs.item
+                :active="request('quick_filter') === 'ready_to_ship'"
+                wire:click="$dispatch('applyQuickFilter', { filter: 'ready_to_ship' })"
+            >
+                <span class="flex items-center gap-2">
+                    Ready to Ship
+                    <x-filament::badge color="info">
+                        {{ \App\Models\Order::readyToShip()->count() }}
+                    </x-filament::badge>
+                </span>
+            </x-filament::tabs.item>
+
+            <x-filament::tabs.item
+                :active="request('quick_filter') === 'processing'"
+                wire:click="$set('tableFilters.status.value', 'processing')"
+            >
+                <span class="flex items-center gap-2">
+                    Processing
+                    <x-filament::badge color="primary">
+                        {{ \App\Models\Order::processing()->count() }}
+                    </x-filament::badge>
+                </span>
+            </x-filament::tabs.item>
+
+            <x-filament::tabs.item
+                :active="request('quick_filter') === 'needs_attention'"
+                wire:click="$dispatch('applyQuickFilter', { filter: 'needs_attention' })"
+            >
+                <span class="flex items-center gap-2">
+                    Needs Attention
+                    <x-filament::badge color="danger">
+                        {{ \App\Models\Order::needsAttention()->count() }}
+                    </x-filament::badge>
+                </span>
+            </x-filament::tabs.item>
+        </x-filament::tabs>
+    </div>
+
+    {{-- Main Table --}}
+    <div>
+        {{ $this->table }}
+    </div>
+</x-filament-panels::page>

@@ -1,0 +1,103 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.claude
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Database files
+*.sqlite
+*.sqlite-journal
+database/*.sqlite
+database/*.sqlite-journal
+
+# Storage & Cache
+/storage/framework/cache/filament/*
+!/storage/framework/cache/filament/.gitkeep
+/storage/logs/*.log
+
+# OS Files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# IDE & Editor
+*.swp
+*.swo
+*~
+.project
+.settings
+.classpath
+.c9/
+*.launch
+.buildpath
+
+# Testing & Coverage
+/coverage
+.phpunit.cache
+
+# Playwright
+/test-results/
+/playwright-report/
+/tests/e2e/.auth/*.json
+playwright/.cache/
+
+# MCP Server databases
+/.mcp/*/database.db
+
+# Python (for MCP servers)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv
+ENV/
+
+# Composer
+composer.phar
+
+# Temporary & Backup
+/tmp
+/temp
+*.bak
+*.backup
+*.old
+
+# Deployment
+deploy.php
+.deployer/
+
+# Filament Published Assets (auto-generated)
+/public/css/filament/
+/public/fonts/filament/
+/public/js/filament/
+
+# Development Tools
+task-tracker/
+*.sh
+
+# Documentation Archives & Docs
+/docs-archive/
+/docs/

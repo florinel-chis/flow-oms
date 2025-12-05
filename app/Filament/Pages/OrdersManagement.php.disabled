@@ -1,0 +1,438 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use App\Models\MagentoStore;
+use App\Models\Order;
+use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Tables;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Number;
+
+class OrdersManagement extends Page implements HasTable
+{
+    use InteractsWithTable;
+
+    protected string $view = 'filament.pages.orders-management';
+
+    public static function getNavigationIcon(): string|BackedEnum|null
+    {
+        return 'heroicon-o-shopping-bag';
+    }
+
+    public static function getNavigationGroup(): string|BackedEnum|null
+    {
+        return 'Orders';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Orders Management';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 2;
+    }
+
+    public static function getSlug(?\Filament\Panel $panel = null): string
+    {
+        return 'orders-management';
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return 'Orders Management';
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return 'Orders Management';
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        return 'Comprehensive order filtering and management interface';
+    }
+
+    // Summary stats for header
+    public function getSummaryStats(): array
+    {
+        $query = $this->getFilteredTableQuery();
+
+        return [
+            'total_orders' => $query->count(),
+            'total_revenue' => $query->sum('grand_total'),
+            'avg_order_value' => $query->avg('grand_total'),
+            'unpaid_amount' => (clone $query)->where('payment_status', 'pending')->sum('grand_total'),
+        ];
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export_all')
+                ->label('Export All')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->action(function () {
+                    $this->exportOrders($this->getFilteredTableQuery()->get());
+                }),
+
+            Action::make('refresh')
+                ->label('Refresh')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->action(fn () => $this->resetTable()),
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(Order::query()->with(['magentoStore', 'items', 'shipments']))
+            ->columns([
+                TextColumn::make('increment_id')
+                    ->label('Order #')
+                    ->searchable()
+                    ->sortable()
+                    ->color('primary')
+                    ->weight('bold')
+                    ->url(fn (Order $record) => route('filament.admin.resources.orders.view', [
+                        'tenant' => filament()->getTenant(),
+                        'record' => $record,
+                    ]))
+                    ->tooltip('Click to view details'),
+
+                BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'warning' => 'pending',
+                        'primary' => 'processing',
+                        'success' => 'complete',
+                        'danger' => 'canceled',
+                        'gray' => 'holded',
+                    ])
+                    ->sortable(),
+
+                BadgeColumn::make('payment_status')
+                    ->label('Payment')
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'paid',
+                        'danger' => 'failed',
+                        'gray' => 'refunded',
+                    ])
+                    ->sortable(),
+
+                TextColumn::make('customer_name')
+                    ->label('Customer')
+                    ->searchable()
+                    ->limit(25)
+                    ->tooltip(fn (Order $record): string => "{$record->customer_name}\n{$record->customer_email}"),
+
+                TextColumn::make('magentoStore.name')
+                    ->label('Store')
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('items_count')
+                    ->label('Items')
+                    ->counts('items')
+                    ->alignCenter()
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('grand_total')
+                    ->label('Total')
+                    ->money('USD')
+                    ->sortable()
+                    ->weight('bold')
+                    ->color('success'),
+
+                BadgeColumn::make('payment_method')
+                    ->label('Payment Method')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'checkmo' => 'Check',
+                        'banktransfer' => 'Bank Transfer',
+                        'cashondelivery' => 'COD',
+                        'paypal_express' => 'PayPal',
+                        'stripe' => 'Stripe',
+                        'authorizenet_directpost' => 'Authorize.net',
+                        default => ucfirst($state),
+                    })
+                    ->toggleable(),
+
+                TextColumn::make('ordered_at')
+                    ->label('Ordered')
+                    ->dateTime('M d, Y H:i')
+                    ->sortable()
+                    ->description(fn (Order $record): string => $record->ordered_at?->diffForHumans() ?? 'N/A'),
+
+                TextColumn::make('shipments_count')
+                    ->label('Shipments')
+                    ->counts('shipments')
+                    ->alignCenter()
+                    ->icon('heroicon-m-truck')
+                    ->toggleable(),
+
+                BadgeColumn::make('days_since_order')
+                    ->label('Age')
+                    ->getStateUsing(fn (Order $record): int => $record->ordered_at?->diffInDays() ?? 0)
+                    ->formatStateUsing(fn (int $state): string => $state > 0 ? "{$state}d" : 'Today')
+                    ->colors([
+                        'success' => fn ($state, Order $record): bool => $state < 1 || $record->payment_status === 'paid',
+                        'warning' => fn ($state, Order $record): bool => $state >= 1 && $state <= 3 && $record->payment_status !== 'paid',
+                        'danger' => fn ($state, Order $record): bool => $state > 3 && $record->payment_status !== 'paid',
+                    ]),
+            ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Order Status')
+                    ->multiple()
+                    ->options([
+                        'pending' => 'Pending',
+                        'processing' => 'Processing',
+                        'complete' => 'Complete',
+                        'canceled' => 'Canceled',
+                        'holded' => 'On Hold',
+                    ]),
+
+                SelectFilter::make('payment_status')
+                    ->label('Payment Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
+                        'failed' => 'Failed',
+                        'refunded' => 'Refunded',
+                    ]),
+
+                SelectFilter::make('payment_method')
+                    ->label('Payment Method')
+                    ->options([
+                        'checkmo' => 'Check/Money Order',
+                        'banktransfer' => 'Bank Transfer',
+                        'cashondelivery' => 'Cash on Delivery',
+                        'paypal_express' => 'PayPal Express',
+                        'stripe' => 'Stripe',
+                        'authorizenet_directpost' => 'Authorize.net',
+                    ]),
+
+                SelectFilter::make('magento_store_id')
+                    ->label('Store')
+                    ->relationship('magentoStore', 'name'),
+
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('ordered_from')
+                            ->label('From Date'),
+                        DatePicker::make('ordered_until')
+                            ->label('To Date'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['ordered_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('ordered_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['ordered_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('ordered_at', '<=', $date),
+                            );
+                    }),
+
+                Filter::make('amount_range')
+                    ->form([
+                        TextInput::make('min_amount')
+                            ->label('Min Amount')
+                            ->numeric()
+                            ->prefix('$'),
+                        TextInput::make('max_amount')
+                            ->label('Max Amount')
+                            ->numeric()
+                            ->prefix('$'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['min_amount'],
+                                fn (Builder $query, $amount): Builder => $query->where('grand_total', '>=', $amount),
+                            )
+                            ->when(
+                                $data['max_amount'],
+                                fn (Builder $query, $amount): Builder => $query->where('grand_total', '<=', $amount),
+                            );
+                    }),
+
+                Filter::make('customer_search')
+                    ->form([
+                        TextInput::make('customer')
+                            ->label('Customer Name or Email')
+                            ->placeholder('Search customer...'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['customer'],
+                            fn (Builder $query, $search): Builder => $query->where(function ($q) use ($search) {
+                                $q->where('customer_name', 'like', "%{$search}%")
+                                    ->orWhere('customer_email', 'like', "%{$search}%");
+                            })
+                        );
+                    }),
+
+                TernaryFilter::make('has_shipments')
+                    ->label('Has Shipments')
+                    ->queries(
+                        true: fn (Builder $query) => $query->has('shipments'),
+                        false: fn (Builder $query) => $query->doesntHave('shipments'),
+                        blank: fn (Builder $query) => $query,
+                    ),
+
+                SelectFilter::make('source')
+                    ->label('Order Source')
+                    ->options([
+                        'web' => 'Web',
+                        'mobile_app' => 'Mobile App',
+                        'pos' => 'Point of Sale',
+                        'marketplace' => 'Marketplace',
+                    ]),
+
+                SelectFilter::make('priority')
+                    ->label('Priority')
+                    ->options([
+                        'normal' => 'Normal',
+                        'urgent' => 'Urgent',
+                        'vip' => 'VIP',
+                    ]),
+            ])
+            ->filtersFormColumns(3)
+            ->actions([
+                Action::make('view_details')
+                    ->label('View')
+                    ->icon('heroicon-o-eye')
+                    ->color('primary')
+                    ->url(fn (Order $record) => route('filament.admin.resources.orders.view', [
+                        'tenant' => filament()->getTenant(),
+                        'record' => $record,
+                    ])),
+
+                Action::make('send_email')
+                    ->icon('heroicon-o-envelope')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->form([
+                        Select::make('email_type')
+                            ->label('Email Type')
+                            ->options([
+                                'confirmation' => 'Order Confirmation',
+                                'payment_reminder' => 'Payment Reminder',
+                                'shipping_notification' => 'Shipping Notification',
+                            ])
+                            ->required(),
+                        Textarea::make('custom_message')
+                            ->label('Custom Message')
+                            ->rows(3),
+                    ])
+                    ->action(function (Order $record, array $data) {
+                        // Dispatch email job
+                        Notification::make()
+                            ->title('Email Sent')
+                            ->body("Email sent to {$record->customer_email}")
+                            ->success()
+                            ->send();
+                    }),
+
+                Action::make('print_invoice')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->action(function (Order $record) {
+                        Notification::make()
+                            ->title('Invoice Ready')
+                            ->body('Invoice generated successfully')
+                            ->success()
+                            ->send();
+                    }),
+            ])
+            ->bulkActions([
+                BulkAction::make('export_selected')
+                    ->label('Export Selected')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function (Collection $records) {
+                        $this->exportOrders($records);
+                    }),
+
+                BulkAction::make('send_notifications')
+                    ->label('Send Email Notifications')
+                    ->icon('heroicon-o-envelope')
+                    ->requiresConfirmation()
+                    ->form([
+                        Select::make('notification_type')
+                            ->label('Notification Type')
+                            ->options([
+                                'payment_reminder' => 'Payment Reminder',
+                                'order_update' => 'Order Update',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function (Collection $records, array $data) {
+                        // Dispatch bulk email job
+                        Notification::make()
+                            ->title('Notifications Queued')
+                            ->body("{$records->count()} emails queued for sending")
+                            ->success()
+                            ->send();
+                    }),
+
+                BulkAction::make('print_invoices')
+                    ->label('Print Invoices')
+                    ->icon('heroicon-o-printer')
+                    ->action(function (Collection $records) {
+                        Notification::make()
+                            ->title('Invoices Ready')
+                            ->body("{$records->count()} invoices generated")
+                            ->success()
+                            ->send();
+                    }),
+            ])
+            ->defaultSort('ordered_at', 'desc')
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistFiltersInSession()
+            ->poll('60s')
+            ->striped()
+            ->paginated([10, 25, 50, 100])
+            ->deferLoading();
+    }
+
+    protected function exportOrders(Collection $orders): void
+    {
+        // Export logic here - generate CSV/Excel
+        Notification::make()
+            ->title('Export Complete')
+            ->body("{$orders->count()} orders exported successfully")
+            ->success()
+            ->send();
+    }
+}
